@@ -1,0 +1,8 @@
+[package]
+name = "packetspammer"
+version = "0.1.0"
+authors = ["Lucas Rooyakkers <lucas.rooyakkers@drdc.rddc.gc.ca>"]
+
+[dependencies]
+structopt = "0.2"
+pcap = "0.7"
