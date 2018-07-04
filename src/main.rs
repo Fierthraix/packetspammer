@@ -70,11 +70,11 @@ fn main() {
         buf.extend_from_slice(&LLC_HEADER);
 
         // Add number and size as payload
-        buf.extend_from_slice(format!("{:6} {:6} ", number, opt.size).as_bytes());
+        buf.extend_from_slice(format!("{:06} {:06} ", number, opt.size).as_bytes());
 
         // Add the rest of the random data
-        // `-14` comes from the above payload info
-        for _ in 0..opt.size - 14 {
+        // -52 comes from the above payload info
+        for _ in 0..opt.size - 52 {
             buf.push(rng.rand_u8());
         }
 
