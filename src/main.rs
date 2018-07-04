@@ -4,6 +4,7 @@ extern crate packetspammer;
 use std::process::exit;
 use std::time::Duration;
 use std::thread::sleep;
+use std::process::Command;
 
 use packetspammer::*;
 
@@ -12,6 +13,7 @@ use pcap::{Capture, Device};
 fn main() {
     let opt = opt::get_args();
 
+    // Get the wireless device to use
     // If the user doesn't specify a device, try the default first
     let device = if opt.interface == "" {
         Device::lookup()
@@ -20,12 +22,10 @@ fn main() {
         Device::list()
             // No devices could be listed
             .unwrap_or_else(|_| { eprintln!("No devices available"); exit(1)})
-            // Iterate over devices and find the one with the same name
+            // Iterate over devices and find the first one with the same name
             .into_iter()
             .filter(|d| d.name == opt.interface)
-            // There should only be one match with the same name; if the list is empty then
-            // that means a match wasn't found
-            .collect::<Vec<_>>().pop()
+            .take(1).next()
             .unwrap_or_else(|| { 
                 eprintln!("No device \"{}\" available", opt.interface); exit(1) 
             })
@@ -38,7 +38,16 @@ fn main() {
         .promisc(true)
         .timeout(20)
         .open()
-        .unwrap_or_else(|_| { eprintln!("Unable to open wireless device"); exit(1) });
+        .unwrap_or_else(|_| {
+            eprint!("Unable to open wireless device");
+            if let Ok(euid) = Command::new("id").arg("-u").output() {
+                if euid.stdout != "0".as_bytes() {
+                    eprintln!(". Try running again as root");
+                }
+            }
+            eprint!("");
+            exit(1)
+        });
 
     let delay = 1_000_000_000 / opt.rate;
 
