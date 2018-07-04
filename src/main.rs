@@ -1,5 +1,3 @@
-#[macro_use]
-extern crate structopt;
 extern crate pcap;
 extern crate packetspammer;
 
@@ -7,34 +5,12 @@ use std::process::exit;
 use std::time::Duration;
 use std::thread::sleep;
 
-use structopt::StructOpt;
 use packetspammer::*;
 
 use pcap::{Capture, Device};
 
-#[derive(StructOpt, Debug)]
-#[structopt(name = "packetspammer")]
-struct Opt {
-
-    /// interface
-    #[structopt(name = "interface", default_value = "")]
-    interface: String,
-
-    /// number of packets to send
-    #[structopt(short = "n", long = "number", default_value = "50")]
-    number: usize,
-
-    /// packets per second
-    #[structopt(short = "r", long = "rate", default_value = "1")]
-    rate: usize,
-
-    /// packet size in bytes (incl MAC header and CRC)
-    #[structopt(short = "s", long = "size", default_value = "128")]
-    size: usize,
-}
-
 fn main() {
-    let opt = Opt::from_args();
+    let opt = opt::get_args();
 
     // If the user doesn't specify a device, try the default first
     let device = if opt.interface == "" {

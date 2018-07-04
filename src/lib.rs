@@ -1,4 +1,9 @@
+#[macro_use]
+extern crate structopt;
+
 use std::time::{SystemTime, UNIX_EPOCH};
+
+pub mod opt;
 
 pub const RADIOTAP_HEADER: [u8; 25] = [
     0x00, 0x00, // <-- radiotap version
