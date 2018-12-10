@@ -42,7 +42,7 @@ impl Default for XorShift {
         // If that fails, use a predefined state
         match SystemTime::now().duration_since(UNIX_EPOCH) {
             Ok(dur) => {
-                XorShift { state: [1, dur.as_secs(), dur.subsec_nanos() as u64, 21] }
+                XorShift { state: [1, dur.as_secs(), u64::from(dur.subsec_nanos()), 21] }
             },
             Err(_) => XorShift { state: [1, 21, 41, 51] }
         }

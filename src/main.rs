@@ -1,10 +1,10 @@
-extern crate pcap;
 extern crate packetspammer;
+extern crate pcap;
 
 use std::process::exit;
-use std::time::Duration;
-use std::thread::sleep;
 use std::process::Command;
+use std::thread::sleep;
+use std::time::Duration;
 
 use packetspammer::*;
 
@@ -16,24 +16,34 @@ fn main() {
     // Get the wireless device to use
     // If the user doesn't specify a device, try the default first
     let device = if opt.interface == "" {
-        Device::lookup()
-            .unwrap_or_else(|_| { eprintln!("No default device available"); exit(1) })
+        Device::lookup().unwrap_or_else(|_| {
+            eprintln!("No default device available");
+            exit(1)
+        })
     } else {
         Device::list()
             // No devices could be listed
-            .unwrap_or_else(|_| { eprintln!("No devices available"); exit(1)})
+            .unwrap_or_else(|_| {
+                eprintln!("No devices available");
+                exit(1)
+            })
             // Iterate over devices and find the first one with the same name
             .into_iter()
             .filter(|d| d.name == opt.interface)
-            .take(1).next()
-            .unwrap_or_else(|| { 
-                eprintln!("No device \"{}\" available", opt.interface); exit(1) 
+            .take(1)
+            .next()
+            .unwrap_or_else(|| {
+                eprintln!("No device \"{}\" available", opt.interface);
+                exit(1)
             })
     };
 
     // Open the device and use the same defaults as the `gr-ieee802-11` version
     let mut capture = Capture::from_device(device)
-        .unwrap_or_else(|_| { eprintln!("Unable to open wireless device"); exit(1) })
+        .unwrap_or_else(|_| {
+            eprintln!("Unable to open wireless device");
+            exit(1)
+        })
         .snaplen(800)
         .promisc(true)
         .timeout(20)
@@ -41,7 +51,7 @@ fn main() {
         .unwrap_or_else(|_| {
             eprint!("Unable to open wireless device");
             if let Ok(euid) = Command::new("id").arg("-u").output() {
-                if euid.stdout != "0".as_bytes() {
+                if euid.stdout != [b'0'] {
                     eprintln!(". Try running again as root");
                 }
             }
@@ -61,7 +71,6 @@ fn main() {
 
     // Create and send each packet
     for number in 0..opt.number {
-
         let mut buf = vec![];
 
         // Add the headers
