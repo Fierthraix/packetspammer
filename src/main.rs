@@ -85,7 +85,12 @@ fn main() {
     let mut mac = DEFAULT_MAC;
 
     // Create and send each packet
-    for number in 0..opt.number {
+    let number_iters = if opt.number == 0 {
+        usize::max_value()
+    } else {
+        opt.number
+    };
+    for number in 0..number_iters {
         let mut buf = vec![];
 
         // Add the headers
@@ -94,7 +99,7 @@ fn main() {
         if opt.random_macs {
             rng.fill(&mut mac);
         }
-        buf.extend_from_slice(&DEFAULT_MAC);
+        buf.extend_from_slice(&mac);
         buf.extend_from_slice(&WIFI_HEADER_END);
         buf.extend_from_slice(&LLC_HEADER);
 

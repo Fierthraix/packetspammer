@@ -2,8 +2,6 @@ extern crate structopt;
 
 use structopt::StructOpt;
 
-pub mod opt;
-
 pub const RADIOTAP_HEADER: [u8; 25] = [
     0x00, 0x00, // <-- radiotap version
     0x19, 0x00, // <-- radiotap header length
@@ -33,8 +31,8 @@ pub struct Opt {
     #[structopt(name = "interface", default_value = "")]
     pub interface: String,
 
-    /// number of packets to send
-    #[structopt(short = "n", long = "number", default_value = "50")]
+    /// number of packets to send (0 means go forever)
+    #[structopt(short = "n", long = "number", default_value = "0")]
     pub number: usize,
 
     /// packets per second
