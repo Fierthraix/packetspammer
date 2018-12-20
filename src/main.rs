@@ -1,6 +1,6 @@
 extern crate packetspammer;
-extern crate rand;
 extern crate pcap;
+extern crate rand;
 
 use std::process::exit;
 use std::process::Command;
@@ -17,7 +17,7 @@ use rand::{thread_rng, Rng};
 
 fn main() {
     // Get Args
-    let opt = opt::get_args();
+    let opt = get_args();
 
     // Configure Debugging
     stderrlog::new()

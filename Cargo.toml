@@ -1,7 +1,8 @@
 [package]
 name = "packetspammer"
 version = "0.1.0"
-authors = ["Lucas Rooyakkers <lucas.rooyakkers@drdc.rddc.gc.ca>"]
+authors = ["Lucas Rooyakkers <lucas.rooyakkers@pm.me>"]
+edition = "2018"
 
 [dependencies]
 structopt = "0.2"
