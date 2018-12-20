@@ -5,35 +5,48 @@ use std::process::exit;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
+use std::env;
+
+#[macro_use]
+extern crate log;
 
 use packetspammer::*;
 
 use pcap::{Capture, Device};
 
 fn main() {
+    // Get Args
     let opt = opt::get_args();
+
+    // Configure Debugging
+    stderrlog::new()
+        .module(module_path!())
+        .quiet(opt.quiet)
+        .verbosity(opt.verbose + 2)
+        .init()
+        .unwrap();
 
     // Get the wireless device to use
     // If the user doesn't specify a device, try the default first
     let device = if opt.interface == "" {
         Device::lookup().unwrap_or_else(|_| {
-            eprintln!("No default device available");
+            error!("No default device available");
             exit(1)
         })
     } else {
         Device::list()
             // No devices could be listed
             .unwrap_or_else(|_| {
-                eprintln!("No devices available");
+                warn!("No devices available");
                 exit(1)
             })
-            // Iterate over devices and find the first one with the same name
-            .into_iter()
+        // Iterate over devices and find the first one with the same name
+        .into_iter()
             .filter(|d| d.name == opt.interface)
             .take(1)
             .next()
             .unwrap_or_else(|| {
-                eprintln!("No device \"{}\" available", opt.interface);
+                error!("No device \"{}\" available", opt.interface);
                 exit(1)
             })
     };
@@ -41,30 +54,30 @@ fn main() {
     // Open the device and use the same defaults as the `gr-ieee802-11` version
     let mut capture = Capture::from_device(device)
         .unwrap_or_else(|_| {
-            eprintln!("Unable to open wireless device");
+            warn!("Unable to open wireless device");
             exit(1)
         })
-        .snaplen(800)
+    .snaplen(800)
         .promisc(true)
         .timeout(20)
         .open()
         .unwrap_or_else(|_| {
-            eprint!("Unable to open wireless device");
+            error!("Unable to open wireless device.");
+
             if let Ok(euid) = Command::new("id").arg("-u").output() {
                 if euid.stdout != [b'0'] {
-                    eprintln!(". Try running again as root");
+                    info!("Try running the command again as root.");
                 }
             }
-            eprint!("");
             exit(1)
         });
 
     let delay = 1_000_000_000 / opt.rate;
 
-    println!("rate: {}", opt.rate);
-    println!("number: {}", opt.number);
-    println!("delay: {}", delay);
-    println!("size: {}", opt.size);
+    info!("rate: {}", opt.rate);
+    info!("number: {}", opt.number);
+    info!("delay: {}", delay);
+    info!("size: {}", opt.size);
 
     // Set up the RNG
     let mut rng = XorShift::default();
@@ -87,11 +100,12 @@ fn main() {
             buf.push(rng.rand_u8());
         }
 
-        println!("Sending packet: \n{:?}", buf);
+        debug!("Sending packet");
+        trace!("{:?}", buf);
 
         // Send the packet and check for errors
         if let Err(e) = capture.sendpacket(buf) {
-            eprintln!("Error injecting packet: {}", e);
+            error!("Error injecting packet: {}", e);
             exit(1);
         }
 
