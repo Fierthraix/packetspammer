@@ -1,11 +1,11 @@
 extern crate packetspammer;
+extern crate rand;
 extern crate pcap;
 
 use std::process::exit;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
-use std::env;
 
 #[macro_use]
 extern crate log;
@@ -13,6 +13,7 @@ extern crate log;
 use packetspammer::*;
 
 use pcap::{Capture, Device};
+use rand::{thread_rng, Rng};
 
 fn main() {
     // Get Args
@@ -40,8 +41,8 @@ fn main() {
                 warn!("No devices available");
                 exit(1)
             })
-        // Iterate over devices and find the first one with the same name
-        .into_iter()
+            // Iterate over devices and find the first one with the same name
+            .into_iter()
             .filter(|d| d.name == opt.interface)
             .take(1)
             .next()
@@ -57,7 +58,7 @@ fn main() {
             warn!("Unable to open wireless device");
             exit(1)
         })
-    .snaplen(800)
+        .snaplen(800)
         .promisc(true)
         .timeout(20)
         .open()
@@ -80,7 +81,8 @@ fn main() {
     info!("size: {}", opt.size);
 
     // Set up the RNG
-    let mut rng = XorShift::default();
+    let mut rng = thread_rng();
+    let mut mac = DEFAULT_MAC;
 
     // Create and send each packet
     for number in 0..opt.number {
@@ -88,7 +90,12 @@ fn main() {
 
         // Add the headers
         buf.extend_from_slice(&RADIOTAP_HEADER);
-        buf.extend_from_slice(&WIFI_HEADER);
+        buf.extend_from_slice(&WIFI_HEADER_START);
+        if opt.random_macs {
+            rng.fill(&mut mac);
+        }
+        buf.extend_from_slice(&DEFAULT_MAC);
+        buf.extend_from_slice(&WIFI_HEADER_END);
         buf.extend_from_slice(&LLC_HEADER);
 
         // Add number and size as payload
@@ -97,7 +104,7 @@ fn main() {
         // Add the rest of the random data
         // -52 comes from the above payload info
         for _ in 0..opt.size - 52 {
-            buf.push(rng.rand_u8());
+            buf.push(rng.gen::<u8>());
         }
 
         debug!("Sending packet");

@@ -18,54 +18,11 @@ pub const RADIOTAP_HEADER: [u8; 25] = [
     0x01, // <-- antenna
 ];
 
-pub const WIFI_HEADER: [u8; 26] = [
-    0x88, 0x00, 0x30, 0x00,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0x23, 0x23, 0x23, 0x23, 0x23, 0x23,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xc0, 0x20, 0x20, 0x00
-];
+pub const DEFAULT_MAC: [u8; 6] = [0x23, 0x23, 0x23, 0x23, 0x23, 0x23];
 
-pub const LLC_HEADER: [u8; 8] = [
-    0xaa, 0xaa, 0x03,
-    0x00, 0x00, 0x00,
-    0x88, 0xb5
-];
+pub const WIFI_HEADER_START: [u8; 10] =
+    [0x88, 0x00, 0x30, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
 
-pub struct XorShift {
-    state: [u64; 4]
-}
+pub const WIFI_HEADER_END: [u8; 10] = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xc0, 0x20, 0x20, 0x00];
 
-impl Default for XorShift {
-    fn default() -> Self {
-        // Try to initialize the state randomly with the clock time
-        // If that fails, use a predefined state
-        match SystemTime::now().duration_since(UNIX_EPOCH) {
-            Ok(dur) => {
-                XorShift { state: [1, dur.as_secs(), u64::from(dur.subsec_nanos()), 21] }
-            },
-            Err(_) => XorShift { state: [1, 21, 41, 51] }
-        }
-    }
-}
-
-impl XorShift {
-    pub fn rand(&mut self) -> u64 {
-        let mut t;
-
-        t = self.state[3];
-        t ^= t << 11;
-        t ^= t << 8;
-        self.state[3] = self.state[2];
-        self.state[2] = self.state[1];
-        self.state[1] = self.state[0];
-        t ^= self.state[0];
-        t ^= self.state[0] >> 19;
-        self.state[0] = t;
-
-        t
-    }
-    pub fn rand_u8(&mut self) -> u8 {
-        self.rand() as u8
-    }
-}
+pub const LLC_HEADER: [u8; 8] = [0xaa, 0xaa, 0x03, 0x00, 0x00, 0x00, 0x88, 0xb5];
