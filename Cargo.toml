@@ -2,11 +2,11 @@
 name = "packetspammer"
 version = "0.1.0"
 authors = ["Lucas Rooyakkers <lucas.rooyakkers@pm.me>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 structopt = "0.3"
-rand = "0.7"
-pcap = "0.7"
+rand = "0.8"
+pcap = "0.9"
 log = "0.4"
-stderrlog = "0.4"
+stderrlog = "0.5"

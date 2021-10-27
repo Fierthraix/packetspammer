@@ -29,7 +29,7 @@ fn main() {
 
     // Get the wireless device to use
     // If the user doesn't specify a device, try the default first
-    let device = if opt.interface == "" {
+    let device = if opt.interface.is_empty() {
         Device::lookup().unwrap_or_else(|_| {
             error!("No default device available");
             exit(1)
